@@ -21,6 +21,7 @@ typedef struct {
     ScanDirection scan_direction;
     const SubGhzDevice* radio_device;
     bool speaker_acquired;
+    bool muted;
 } RadioScannerApp;
 
 RadioScannerApp* radio_scanner_app_alloc(void);
