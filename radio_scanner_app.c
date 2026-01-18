@@ -134,20 +134,7 @@ static bool radio_scanner_init_subghz(RadioScannerApp* app) {
 #ifdef FURI_DEBUG
     FURI_LOG_D(TAG, "Asynchronous RX started");
 #endif
-    if(furi_hal_speaker_acquire(30)) {
-        app->speaker_acquired = true;
-        subghz_devices_set_async_mirror_pin(device, &gpio_speaker);
-#ifdef FURI_DEBUG
-        FURI_LOG_D(TAG, "Speaker acquired and async mirror pin set");
-#endif
-    } else {
-        app->speaker_acquired = false;
-        FURI_LOG_E(TAG, "Failed to acquire speaker");
-    }
-#ifdef FURI_DEBUG
-    FURI_LOG_D(TAG, "Exit radio_scanner_init_subghz");
-#endif
-    return true;
+    app->speaker_acquired = false;
 }
 
 static void radio_scanner_process_scanning(RadioScannerApp* app) {
