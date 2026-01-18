@@ -397,12 +397,32 @@ int32_t radio_scanner_app(void* p) {
                     app->scan_direction = ScanDirectionUp;
                     FURI_LOG_I(TAG, "Scan direction set to up");
                 } else if(event.key == InputKeyBack) {
-                    app->running = false;
-                    FURI_LOG_I(TAG, "Exiting app");
+                   if(event.type == InputTypeShort) {
+                       app->muted = !app->muted;
+                       FURI_LOG_I(TAG, "Volume toggled: %s", app->muted ? "MUTED" : "ON");
+                       NotificationApp* notifications = furi_record_open(RECORD_NOTIFICATION);
+                       notification_message(notifications, &sequence_single_vibro);
+                       furi_record_close(RECORD_NOTIFICATION);
+                       if(app->muted) {
+                           if(app->speaker_acquired) {
+                               subghz_devices_set_async_mirror_pin(app->radio_device, NULL);
+                               furi_hal_speaker_release();
+                               app->speaker_acquired = false;
+                           }
+                       } else {
+                           if(!app->speaker_acquired && furi_hal_speaker_acquire(30)) {
+                               app->speaker_acquired = true;
+                               subghz_devices_set_async_mirror_pin(app->radio_device, &gpio_speaker);
+                           }
+                       }
+                   } else if(event.type == InputTypeLong) {
+                       app->running = false;
+                       FURI_LOG_I(TAG, "Exiting app (long press Back)");
+                   }
                 }
             }
         }
-
+        
         view_port_update(app->view_port);
         furi_delay_ms(10);
     }
