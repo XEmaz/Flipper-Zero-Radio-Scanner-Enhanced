@@ -18,6 +18,8 @@
 #define SUBGHZ_FREQUENCY_STEP 10000
 #define SUBGHZ_DEVICE_NAME    "cc1101_int"
 
+static uint32_t back_press_time = 0;
+
 static void radio_scanner_draw_callback(Canvas* canvas, void* context) {
     furi_assert(canvas);
     furi_assert(context);
