@@ -5,6 +5,7 @@
 #include <gui/elements.h>
 #include <furi_hal_speaker.h>
 #include <subghz/devices/devices.h>
+#include <notification/notification_messages.h>
 
 #define TAG "RadioScannerApp"
 
@@ -49,6 +50,10 @@ static void radio_scanner_draw_callback(Canvas* canvas, void* context) {
 #ifdef FURI_DEBUG
     FURI_LOG_D(TAG, "Exit radio_scanner_draw_callback");
 #endif
+    if(app->muted) {
+    canvas_set_font(canvas, FontSecondary);
+    canvas_draw_str_aligned(canvas, 124, 2, AlignRight, AlignTop, "MUTE");
+    }
 }
 
 static void radio_scanner_input_callback(InputEvent* input_event, void* context) {
