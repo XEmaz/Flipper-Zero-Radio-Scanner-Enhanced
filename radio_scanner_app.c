@@ -446,6 +446,7 @@ int32_t radio_scanner_app(void* p) {
                     FURI_LOG_I(TAG, "Scan direction set to up");
                 }
             }
+        }
         
         view_port_update(app->view_port);
         furi_delay_ms(10);
