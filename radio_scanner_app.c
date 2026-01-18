@@ -19,8 +19,6 @@
 #define SUBGHZ_FREQUENCY_STEP 10000
 #define SUBGHZ_DEVICE_NAME    "cc1101_int"
 
-static uint32_t back_press_time = 0;
-
 static void radio_scanner_draw_callback(Canvas* canvas, void* context) {
     furi_assert(canvas);
     furi_assert(context);
@@ -140,6 +138,12 @@ static bool radio_scanner_init_subghz(RadioScannerApp* app) {
     FURI_LOG_D(TAG, "Asynchronous RX started");
 #endif
     app->speaker_acquired = false;
+
+    #ifdef FURI_DEBUG
+        FURI_LOG_D(TAG, "Exit radio_scanner_init_subghz");
+    #endif
+
+    return true;
 }
 
 static void radio_scanner_process_scanning(RadioScannerApp* app) {
