@@ -2,7 +2,8 @@
 
 ## 📻 Description
 Scans frequencies available to the CC1101 and plays them over the speaker so you can hear them.
-You can change frequency with ⟵ ⟶, and change volume output with ↑ ↓
+
+You can change frequency with ⟵ ⟶, the sensitivity with ↑ ↓, and toggle the volume with ↩
 - Does NOT play "FM radio stations" since those frequencies are not available.
 
 ## 📸 Screenshots
