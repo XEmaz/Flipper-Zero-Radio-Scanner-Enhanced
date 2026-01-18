@@ -1,6 +1,6 @@
 ## v0.2
 
-- Enhanced version by [XEmaz](@XEmaz-git.)
+- Enhanced version by [XEmaz](@XEmaz.)
 
 
 ## v0.1
