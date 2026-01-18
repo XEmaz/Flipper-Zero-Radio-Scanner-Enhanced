@@ -19,6 +19,9 @@
 #define SUBGHZ_FREQUENCY_STEP 10000
 #define SUBGHZ_DEVICE_NAME    "cc1101_int"
 
+static uint32_t back_press_start = 0;
+static bool back_held = false;
+
 static void radio_scanner_draw_callback(Canvas* canvas, void* context) {
     furi_assert(canvas);
     furi_assert(context);
@@ -49,8 +52,8 @@ static void radio_scanner_draw_callback(Canvas* canvas, void* context) {
     FURI_LOG_D(TAG, "Exit radio_scanner_draw_callback");
 #endif
     if(app->muted) {
-    canvas_set_font(canvas, FontSecondary);
-    canvas_draw_str_aligned(canvas, 124, 2, AlignRight, AlignTop, "MUTE");
+    canvas_set_font(canvas, FontPrimary);
+    canvas_draw_str_aligned(canvas, 124, 60, AlignRight, AlignBottom, "MUTE");
     }
 }
 
@@ -389,7 +392,43 @@ int32_t radio_scanner_app(void* p) {
 #ifdef FURI_DEBUG
             FURI_LOG_D(TAG, "Input event received: type=%d, key=%d", event.type, event.key);
 #endif
-            if(event.type == InputTypeShort) {
+            if(event.type == InputTypePress) {
+                if(event.key == InputKeyBack) {
+                    back_press_start = furi_get_tick();
+                    back_held = false;
+                }
+            } else if(event.type == InputTypeRelease) {
+                if(event.key == InputKeyBack && back_press_start > 0) {
+                    uint32_t duration = furi_get_tick() - back_press_start;
+                    if(duration < 800) {
+                        app->muted = !app->muted;
+                        FURI_LOG_I(TAG, "Volume toggled: %s", app->muted ? "MUTED" : "ON");
+                        
+                        NotificationApp* notifications = furi_record_open(RECORD_NOTIFICATION);
+                        notification_message(notifications, &sequence_single_vibro);
+                        furi_record_close(RECORD_NOTIFICATION);
+                        
+                        if(app->muted) {
+                            if(app->speaker_acquired) {
+                                subghz_devices_set_async_mirror_pin(app->radio_device, NULL);
+                                furi_hal_speaker_release();
+                                app->speaker_acquired = false;
+                            }
+                        } else {
+                            if(!app->speaker_acquired && furi_hal_speaker_acquire(30)) {
+                                app->speaker_acquired = true;
+                                subghz_devices_set_async_mirror_pin(app->radio_device, &gpio_speaker);
+                            }
+                        }
+                    } else {
+                        app->running = false;
+                        FURI_LOG_I(TAG, "Exiting app (long press Back)");
+                    }
+
+                    back_press_start = 0;
+                    back_held = false;
+                }
+            } else if(event.type == InputTypeShort) {
                 if(event.key == InputKeyOk) {
                     app->scanning = !app->scanning;
                     FURI_LOG_I(TAG, "Toggled scanning: %d", app->scanning);
@@ -405,32 +444,8 @@ int32_t radio_scanner_app(void* p) {
                 } else if(event.key == InputKeyRight) {
                     app->scan_direction = ScanDirectionUp;
                     FURI_LOG_I(TAG, "Scan direction set to up");
-                } else if(event.key == InputKeyBack) {
-                   if(event.type == InputTypeShort) {
-                       app->muted = !app->muted;
-                       FURI_LOG_I(TAG, "Volume toggled: %s", app->muted ? "MUTED" : "ON");
-                       NotificationApp* notifications = furi_record_open(RECORD_NOTIFICATION);
-                       notification_message(notifications, &sequence_single_vibro);
-                       furi_record_close(RECORD_NOTIFICATION);
-                       if(app->muted) {
-                           if(app->speaker_acquired) {
-                               subghz_devices_set_async_mirror_pin(app->radio_device, NULL);
-                               furi_hal_speaker_release();
-                               app->speaker_acquired = false;
-                           }
-                       } else {
-                           if(!app->speaker_acquired && furi_hal_speaker_acquire(30)) {
-                               app->speaker_acquired = true;
-                               subghz_devices_set_async_mirror_pin(app->radio_device, &gpio_speaker);
-                           }
-                       }
-                   } else if(event.type == InputTypeLong) {
-                       app->running = false;
-                       FURI_LOG_I(TAG, "Exiting app (long press Back)");
-                   }
                 }
             }
-        }
         
         view_port_update(app->view_port);
         furi_delay_ms(10);
