@@ -265,6 +265,7 @@ RadioScannerApp* radio_scanner_app_alloc() {
     app->scan_direction = ScanDirectionUp;
     app->speaker_acquired = false;
     app->radio_device = NULL;
+    app->muted = false;
 
     view_port_draw_callback_set(app->view_port, radio_scanner_draw_callback, app);
 #ifdef FURI_DEBUG
